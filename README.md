@@ -7,10 +7,38 @@ This repository contains Verilog implementations of various digital circuits. Ea
 ## Projects
 
 ### Project 1: Inverter
+### THEORY
+An **Inverter**, also known as a **NOT gate**, is a basic logic gate that outputs the **complement** (inverse) of its input. It is one of the fundamental building blocks in digital logic design.
+
+In digital terms:
+- If the input is `1`, the output is `0`.
+- If the input is `0`, the output is `1`.
+
+In VLSI design, inverters are implemented using CMOS (Complementary Metal-Oxide-Semiconductor) technology, which utilizes a combination of **PMOS** and **NMOS** transistors to achieve high speed and low power operation.
+
+The inverter performs a **logical negation** operation. It simply flips the input logic level.
+
+- Input HIGH (`1`) → Output LOW (`0`)
+- Input LOW (`0`) → Output HIGH (`1`)
+
+***Truth Table***
+
+| Input (A) | Output (Y = ~A) |
+|-----------|-----------------|
+|     0     |        1        |
+|     1     |        0        |
+
+
+**block diagram**
+##  Logic Symbol
+
+
 #### Source Code
 ```verilog
 // inverter.v
-module inverter(input wire a, output wire y);
+module inverter(a,y);
+input a;
+output y;
     assign y = ~a;
 endmodule
 ```
@@ -22,7 +50,7 @@ module inverter_tb;
     reg a;
     wire y;
     
-    inverter uut (.a(a), .y(y));
+    inverter inv(.a(a), .y(y));
     
     initial begin
         $monitor("a=%b, y=%b", a, y);
@@ -82,7 +110,8 @@ endmodule
 
 #### Testbench
 ```verilog
-// twodigbcdadd_tb.v// twodigbcdadd_tb.v
+// twodigbcdadd_tb.v
+
 `timescale 1ns/1ps
 
 module twodigbcdadd_tb;
@@ -92,14 +121,13 @@ module twodigbcdadd_tb;
     wire cout;
 
     // Instantiate the Unit Under Test (UUT)
-    twodigbcdadd uut (
+       twodigitbcd uut (
         .x(x),
         .y(y),
         .cin(cin),
         .sum(sum),
         .cout(cout)
     );
-
     initial begin
         // Monitor the signals
         $monitor("Time=%0t | x=%b (%d) y=%b (%d) cin=%b | sum=%b (%d) cout=%b", 
@@ -131,18 +159,6 @@ endmodule
 #### Source Code
 ```verilog
 // claa.v
-module fulladder(a,b,cin,sum,g,p);
-input a,b;
-input cin;
-output sum;
-//output cout;
-output g,p;
-
-assign sum = a^b^cin;
-assign g = a&b;
-assign p = a^b;
-//assign cout = a&b | (a^b)&cin;
-endmodule
 
 module claa(a, b, cin, sum, cout);
   input [3:0] a, b;
@@ -168,6 +184,20 @@ module claa(a, b, cin, sum, cout);
 
 endmodule
 
+module fulladder(a,b,cin,sum,g,p);
+input a,b;
+input cin;
+output sum;
+//output cout;
+output g,p; //carry generation and propogation
+
+assign sum = a^b^cin;
+assign g = a&b;
+assign p = a^b;
+//assign cout = a&b | (a^b)&cin;
+endmodule
+
+
 ```
 
 #### Testbench
@@ -182,7 +212,7 @@ module cla_tb();
     wire cout;
     
     
-    claa  cla1(a,b,cin,sum,cout);
+    claa  cla1(.a(a), .b(b), .cin(cin), .sum(sum), .cout(cout));
     
     initial begin
         // Test cases
@@ -207,14 +237,13 @@ endmodule ```
 
 ---
 
-### Project 4: 7-Segment Display
+### Project 4: BCD to 7-Segment Display decoder
 #### Source Code
 ```verilog
 // sevseg.v
-module sevseg(
-    input [3:0] bcd,
-    output [6:0] sevseg  
-);
+module sevseg(bcd, sevseg);
+    input [3:0] bcd;
+    output [6:0] sevseg;  
 
 
 function automatic [6:0] convert;  
@@ -240,6 +269,32 @@ endfunction
 assign sevseg = convert(bcd);
 
 endmodule
+
+
+// or simpler code
+
+ module bcd_seven (bcd, seven);
+  input [3:0] bcd;
+  output[7:1] seven;
+  reg   [7:1] seven;
+  always @(bcd)
+  begin
+    case (bcd)
+      4'b0000 : seven = 7'b0111111 ;
+      4'b0001 : seven = 7'b0000110 ;
+      4'b0010 : seven = 7'b1011011 ;
+      4'b0011 : seven = 7'b1001111 ;
+      4'b0100 : seven = 7'b1100110 ;
+      4'b0101 : seven = 7'b1101101 ;
+      4'b0110 : seven = 7'b1111101 ;
+      4'b0111 : seven = 7'b0000111 ;
+      4'b1000 : seven = 7'b1111111 ;
+      4'b1001 : seven = 7'b1101111 ;
+      default : seven = 7'b0000000 ;
+    endcase
+  end
+ endmodule
+
 ```
 
 #### Testbench
