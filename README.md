@@ -1,57 +1,53 @@
+# Verilog Project Repository
 
-# Verilog Project
-
-## Introduction
 This repository contains Verilog implementations of various digital circuits. Each project includes its source code, testbench, and simulation results. The purpose of this repository is to demonstrate digital design concepts and verify them through simulations.
 
-## Projects
+---
 
-### Project 1: Inverter
-### THEORY
-An **Inverter**, also known as a **NOT gate**, is a basic logic gate that outputs the **complement** (inverse) of its input. It is one of the fundamental building blocks in digital logic design.
+## 🧠 Project 1: Inverter
 
-In digital terms:
-- If the input is `1`, the output is `0`.
-- If the input is `0`, the output is `1`.
+### 🔍 Theory
+An **Inverter** (or **NOT gate**) outputs the complement of its input. It is one of the most basic digital logic gates.
+
+In CMOS, an inverter is made using one PMOS and one NMOS transistor. It is used to flip binary values.
 
 In VLSI design, inverters are implemented using CMOS (Complementary Metal-Oxide-Semiconductor) technology, which utilizes a combination of **PMOS** and **NMOS** transistors to achieve high speed and low power operation.
 
 The inverter performs a **logical negation** operation. It simply flips the input logic level.
 
-- Input HIGH (`1`) → Output LOW (`0`)
-- Input LOW (`0`) → Output HIGH (`1`)
+### ⚙️ Functionality
+- Input `0` → Output `1`
+- Input `1` → Output `0`
 
-***Truth Table***
+### 📊 Truth Table
 
-| Input (A) | Output (Y = ~A) |
-|-----------|-----------------|
-|     0     |        1        |
-|     1     |        0        |
+| A | Y = ~A |
+|---|--------|
+| 0 |   1    |
+| 1 |   0    |
 
+### 🔗 Logic Symbol
+<div align="center">
+  <img src="https://github.com/ShravanaHS/verilog/blob/main/files/invsym.png" alt="Inverter symbol">
+</div>
 
-**block diagram**
-##  Logic Symbol
-<div align="center"> <img src="https://github.com/ShravanaHS/verilog/blob/main/files/invsym.png" alt="Inverter symbol" > inverter symbol </div>
-
-#### Source Code
+### 💾 Source Code
 ```verilog
-// inverter.v
-module inverter(a,y);
-input a;
-output y;
+module inverter(a, y);
+    input a;
+    output y;
     assign y = ~a;
 endmodule
 ```
 
-#### Testbench
+### 🧪 Testbench
 ```verilog
-// inverter_tb.v
 module inverter_tb;
     reg a;
     wire y;
-    
+
     inverter inv(.a(a), .y(y));
-    
+
     initial begin
         $monitor("a=%b, y=%b", a, y);
         a = 0; #10;
@@ -61,221 +57,217 @@ module inverter_tb;
 endmodule
 ```
 
-#### Simulation Result
-```
-a=0, y=1
-a=1, y=0
-```
-<div align="center"> <img src="https://github.com/ShravanaHS/verilog/blob/main/files/inv.png?raw=true" alt="Inverter Simulation Waveform" > Inverter Simulation Waveform </div>
+### 📉 Simulation Result
+<div align="center">
+  <img src="https://github.com/ShravanaHS/verilog/blob/main/files/inv.png?raw=true" alt="Inverter Simulation Waveform">Inverter Simulation Waveform
+</div>
 
 ---
 
-### Project 2: 2-Digit BCD Adder
-#### Block Diagram 
+## 🧮 Project 2: 2-Digit BCD Adder
 
-#### Source Code
+### 🔍 Theory
+A **BCD (Binary-Coded Decimal) Adder** adds two decimal numbers represented in 8-bit BCD format (two digits). Each digit (0–9) is encoded using 4 bits. If the sum exceeds 9, it adds 6 (0110) to correct it back into BCD format.
+
+### ⚙️ Functionality
+- Handles addition of two 2-digit BCD numbers with carry-in.
+- Corrects results that exceed `9` (1001).
+  
+### 🔗 Logic Symbol
+<div align="center">
+  <img src="https://github.com/ShravanaHS/verilog/blob/main/files/clasum.png" alt=" symbol">
+</div>
+
+### 📊 Truth Table
+| Input BCD A | Input BCD B | Sum | Correction |
+|-------------|--------------|-----|------------|
+| 0100 (4)    | 0101 (5)     | 1001 (9) | -      |
+| 0101 (5)    | 0101 (5)     | 1010 (10) | +6 → 0000 (0) carry 1 |
+
+### 💾 Source Code
 ```verilog
-// twodigbcdadd.v
 module twodigbcdadd(x, y, cin, sum, cout);
-// Defining input and outputs
-input [7:0] x, y;
-input cin;
-output [8:0] sum;
-output cout;
+    input [7:0] x, y;
+    input cin;
+    output [8:0] sum;
+    output cout;
 
-// Assigning wires for sum, corrected sum, carry
-wire [3:0] lsdx, lsdy, msdx, msdy;
-wire [4:0] lsdbin_sum, lsdbcd_sum, msd_binsum, msd_bcdsum;
-wire clsd, cmsd;
+    wire [3:0] lsdx, lsdy, msdx, msdy;
+    wire [4:0] lsdbin_sum, lsdbcd_sum, msd_binsum, msd_bcdsum;
+    wire clsd, cmsd;
 
-// Splitting input into LSD and MSD
-assign lsdx = x[3:0];
-assign msdx = x[7:4];
-assign lsdy = y[3:0];
-assign msdy = y[7:4];
+    assign lsdx = x[3:0];
+    assign msdx = x[7:4];
+    assign lsdy = y[3:0];
+    assign msdy = y[7:4];
 
-// Performing LSD addition
-assign lsdbin_sum = lsdx + lsdy + cin;
-assign lsdbcd_sum = (lsdbin_sum > 9) ? (lsdbin_sum + 6) : lsdbin_sum;
-assign clsd = (lsdbin_sum > 9) ? 1 : 0;
+    assign lsdbin_sum = lsdx + lsdy + cin;
+    assign lsdbcd_sum = (lsdbin_sum > 9) ? (lsdbin_sum + 6) : lsdbin_sum;
+    assign clsd = (lsdbin_sum > 9) ? 1 : 0;
 
-// Performing MSD addition
-assign msd_binsum = msdx + msdy + clsd;
-assign msd_bcdsum = (msd_binsum > 9) ? (msd_binsum + 6) : msd_binsum;
-assign cmsd = (msd_binsum > 9) ? 1 : 0;
+    assign msd_binsum = msdx + msdy + clsd;
+    assign msd_bcdsum = (msd_binsum > 9) ? (msd_binsum + 6) : msd_binsum;
+    assign cmsd = (msd_binsum > 9) ? 1 : 0;
 
-// Correcting sum output (concatenating MSD and LSD)
-assign sum = {msd_bcdsum[3:0], lsdbcd_sum[3:0]};
-assign cout = cmsd;
-
+    assign sum = {msd_bcdsum[3:0], lsdbcd_sum[3:0]};
+    assign cout = cmsd;
 endmodule
 ```
 
-#### Testbench
+### 🧪 Testbench
 ```verilog
-// twodigbcdadd_tb.v
-
-`timescale 1ns/1ps
-
 module twodigbcdadd_tb;
     reg [7:0] x, y;
     reg cin;
     wire [8:0] sum;
     wire cout;
 
-    // Instantiate the Unit Under Test (UUT)
-       twodigitbcd uut (
-        .x(x),
-        .y(y),
-        .cin(cin),
-        .sum(sum),
-        .cout(cout)
-    );
-    initial begin
-        // Monitor the signals
-        $monitor("Time=%0t | x=%b (%d) y=%b (%d) cin=%b | sum=%b (%d) cout=%b", 
-                 $time, x, x, y, y, cin, sum, sum, cout);
+    twodigbcdadd uut (.x(x), .y(y), .cin(cin), .sum(sum), .cout(cout));
 
-        // Test cases
+    initial begin
+        $monitor("x=%b y=%b cin=%b | sum=%b cout=%b", x, y, cin, sum, cout);
         x = 8'b00000000; y = 8'b00000000; cin = 0; #10;
-        x = 8'b00000001; y = 8'b00000001; cin = 0; #10;
-        x = 8'b00000101; y = 8'b00000101; cin = 0; #10;
-        x = 8'b00001000; y = 8'b00001001; cin = 0; #10;
+        x = 8'b00001001; y = 8'b00000001; cin = 0; #10;
         x = 8'b00001001; y = 8'b00001001; cin = 0; #10;
         x = 8'b00010010; y = 8'b00001001; cin = 1; #10;
-        x = 8'b00011001; y = 8'b00011001; cin = 0; #10;
-
         $finish;
     end
 endmodule
-
 ```
 
-#### Simulation Result
-
-<div align="center"> <img src="https://github.com/ShravanaHS/verilog/blob/main/files/2digbcd.png?raw=true" alt="2-digit BCD Adder Simulation Waveform"> 2-digit BCD Adder Simulation Waveform </div>
-
+### 📉 Simulation Result
+<div align="center">
+  <img src="https://github.com/ShravanaHS/verilog/blob/main/files/2digbcd.png?raw=true" alt="2-digit BCD Adder Simulation Waveform">2-digit BCD Adder Simulation Waveform
+</div>
 
 ---
 
-### Project 3: 4-Bit Carry Lookahead Adder
-#### block diagram
-<div align="center"> <img src="https://github.com/ShravanaHS/verilog/blob/main/files/clasum.png" alt="sumbol"> 4 Bit carry lookahead adder symbol </div>
+## ➕ Project 3: 4-bit Carry Lookahead Adder
 
-#### Source Code
+
+### 🔍 Theory
+The **Carry Lookahead Adder (CLA)** is a high-speed adder that reduces delay by computing carry signals in advance using generate (`g`) and propagate (`p`) logic.
+
+### ⚙️ Functionality
+- Faster than ripple-carry adder.
+- Uses parallel logic to determine carry.
+
+
+### 📊 Truth Table
+| A | B | Cin | Sum | Cout |
+|---|---|-----|-----|------|
+| 0010 | 0011 | 0 | 0101 | 0 |
+| 1111 | 0001 | 1 | 0001 | 1 |
+
+### 💾 Source Code
 ```verilog
-// claa.v
-
 module claa(a, b, cin, sum, cout);
-  input [3:0] a, b;
-  input cin;
-  output [3:0] sum;
-  output cout;
+    input [3:0] a, b;
+    input cin;
+    output [3:0] sum;
+    output cout;
 
-  wire [3:0] g, p, c;  // Generate, Propagate, Carry Wires
+    wire [3:0] g, p, c;
 
-  assign c[0] = cin;  // First carry-in is cin
+    assign c[0] = cin;
 
-  // Instantiate Full Adders
-  fulladder FA0 (.a(a[0]), .b(b[0]), .cin(c[0]), .sum(sum[0]), .g(g[0]), .p(p[0]));
-  fulladder FA1 (.a(a[1]), .b(b[1]), .cin(c[1]), .sum(sum[1]), .g(g[1]), .p(p[1]));
-  fulladder FA2 (.a(a[2]), .b(b[2]), .cin(c[2]), .sum(sum[2]), .g(g[2]), .p(p[2]));
-  fulladder FA3 (.a(a[3]), .b(b[3]), .cin(c[3]), .sum(sum[3]), .g(g[3]), .p(p[3]));
+    fulladder FA0 (.a(a[0]), .b(b[0]), .cin(c[0]), .sum(sum[0]), .g(g[0]), .p(p[0]));
+    fulladder FA1 (.a(a[1]), .b(b[1]), .cin(c[1]), .sum(sum[1]), .g(g[1]), .p(p[1]));
+    fulladder FA2 (.a(a[2]), .b(b[2]), .cin(c[2]), .sum(sum[2]), .g(g[2]), .p(p[2]));
+    fulladder FA3 (.a(a[3]), .b(b[3]), .cin(c[3]), .sum(sum[3]), .g(g[3]), .p(p[3]));
 
-  // Carry Look-Ahead Logic
-  assign c[1] = g[0] | (p[0] & c[0]);
-  assign c[2] = g[1] | (p[1] & c[1]);
-  assign c[3] = g[2] | (p[2] & c[2]);
-  assign cout = g[3] | (p[3] & c[3]);
-
+    assign c[1] = g[0] | (p[0] & c[0]);
+    assign c[2] = g[1] | (p[1] & c[1]);
+    assign c[3] = g[2] | (p[2] & c[2]);
+    assign cout = g[3] | (p[3] & c[3]);
 endmodule
 
-module fulladder(a,b,cin,sum,g,p);
-input a,b;
-input cin;
-output sum;
-//output cout;
-output g,p; //carry generation and propogation
+module fulladder(a, b, cin, sum, g, p);
+    input a, b, cin;
+    output sum, g, p;
 
-assign sum = a^b^cin;
-assign g = a&b;
-assign p = a^b;
-//assign cout = a&b | (a^b)&cin;
+    assign sum = a ^ b ^ cin;
+    assign g = a & b;
+    assign p = a ^ b;
 endmodule
-
-
 ```
 
-#### Testbench
+### 🧪 Testbench
 ```verilog
-// cla_tb.v
-
-module cla_tb();
-    
+module cla_tb;
     reg [3:0] a, b;
     reg cin;
     wire [3:0] sum;
     wire cout;
-    
-    
-    claa  cla1(.a(a), .b(b), .cin(cin), .sum(sum), .cout(cout));
-    
-    initial begin
-        // Test cases
-        $monitor("Time=%0t | a=%b b=%b cin=%b | sum=%b cout=%b", $time, a, b, cin, sum, cout);
-        
-      #10  a = 4'b0000; b = 4'b0000; cin = 0; #10;
-       #10  a = 4'b0001; b = 4'b0001; cin = 0; #10;
-       #10 a = 4'b0011; b = 4'b0011; cin = 0; #10;
-       #10 a = 4'b0101; b = 4'b0010; cin = 1; #10;
-       #10 a = 4'b0110; b = 4'b0110; cin = 0; #10;
-       #10 a = 4'b1111; b = 4'b1111; cin = 1; #10;
-        
-        // End simulation
-       #100 $finish;
-    end
-endmodule ```
 
-#### Simulation Result
+    claa cla1(.a(a), .b(b), .cin(cin), .sum(sum), .cout(cout));
+
+    initial begin
+        $monitor("a=%b b=%b cin=%b | sum=%b cout=%b", a, b, cin, sum, cout);
+        a = 4'b0001; b = 4'b0010; cin = 0; #10;
+        a = 4'b1111; b = 4'b0001; cin = 1; #10;
+        $finish;
+    end
+endmodule
 ```
-<div align="center"> <img src="https://github.com/ShravanaHS/verilog/blob/main/files/cla.png" alt="Carry Look Ahead Adder Simulation Waveform" > Carry Look Ahead Adder Simulation Waveform </div>
-```
+
+### 📉 Simulation Result
+<div align="center">
+  <img src="https://github.com/ShravanaHS/verilog/blob/main/files/cla.png?raw=true" alt="CLA Simulation Waveform">CLA Simulation Waveform
+</div>
 
 ---
 
-### Project 4: BCD to 7-Segment Display decoder
-#### Source Code
+## 🔢 Project 4: BCD to 7-Segment Display Decoder
+
+### 🔍 Theory
+This module converts a 4-bit BCD input into a 7-bit output to drive a seven-segment display (common cathode). Each segment corresponds to a bit in the output.
+
+### ⚙️ Functionality
+- Converts BCD (0–9) into appropriate pattern to light segments `a` to `g` in display.
+
+### 📊 Truth Table
+
+| BCD | Output `abcdefg` |
+|-----|------------------|
+| 0000 | 0111111 |
+| 0001 | 0000110 |
+| 0010 | 1011011 |
+| 0011 | 1001111 |
+| 0100 | 1100110 |
+| 0101 | 1101101 |
+| 0110 | 1111101 |
+| 0111 | 0000111 |
+| 1000 | 1111111 |
+| 1001 | 1101111 |
+
+### 💾 Source Code
 ```verilog
-// sevseg.v
 module sevseg(bcd, sevseg);
     input [3:0] bcd;
-    output [6:0] sevseg;  
+    output [6:0] sevseg;
 
+    function automatic [6:0] convert;
+        input [3:0] bcd;
+        begin
+            case (bcd)
+                4'b0000: convert = 7'b0111111;
+                4'b0001: convert = 7'b0000110;
+                4'b0010: convert = 7'b1011011;
+                4'b0011: convert = 7'b1001111;
+                4'b0100: convert = 7'b1100110;
+                4'b0101: convert = 7'b1101101;
+                4'b0110: convert = 7'b1111101;
+                4'b0111: convert = 7'b0000111;
+                4'b1000: convert = 7'b1111111;
+                4'b1001: convert = 7'b1101111;
+                default: convert = 7'b0000000;
+            endcase
+        end
+    endfunction
 
-function automatic [6:0] convert;  
-    input [3:0] bcd;
-    begin
-        case (bcd)
-            4'b0000: convert = 7'b0111111; // 0
-            4'b0001: convert = 7'b0000110; // 1
-            4'b0010: convert = 7'b1011011; // 2
-            4'b0011: convert = 7'b1001111; // 3
-            4'b0100: convert = 7'b1100110; // 4
-            4'b0101: convert = 7'b1101101; // 5
-            4'b0110: convert = 7'b1111101; // 6
-            4'b0111: convert = 7'b0000111; // 7
-            4'b1000: convert = 7'b1111111; // 8
-            4'b1001: convert = 7'b1101111; // 9
-            default: convert = 7'b0000000; // Blank 
-        endcase
-    end
-endfunction
-
-
-assign sevseg = convert(bcd);
-
+    assign sevseg = convert(bcd);
 endmodule
-
 
 // or simpler code
 
@@ -300,56 +292,156 @@ endmodule
     endcase
   end
  endmodule
-
 ```
 
-#### Testbench
+### 🧪 Testbench
 ```verilog
-// sevseg_tb.v
-module sevseg_tb();
-    
+module sevseg_tb;
     reg [3:0] bcd;
-    wire [6:0] sevseg;  
-    sevseg sevseg1(.bcd(bcd), .sevseg(sevseg));
+    wire [6:0] sevseg;
 
-    initial 
-    begin
-        #0  bcd = 4'b0000;  // 0  
-        #10 bcd = 4'b0001;  // 1  
-        #10 bcd = 4'b0010;  // 2  
-        #10 bcd = 4'b0011;  // 3  
-        #10 bcd = 4'b0100;  // 4  
-        #10 bcd = 4'b0101;  // 5  
-        #10 bcd = 4'b0110;  // 6  
-        #10 bcd = 4'b0111;  // 7  
-        #10 bcd = 4'b1000;  // 8  
-        #10 bcd = 4'b1001;  // 9  
-    end  
-    initial 
-    begin 
-        $monitor($time, " | BCD = %b | Seven-Segment = %h", bcd, sevseg); 
-        #100 $finish;  
+    sevseg uut (.bcd(bcd), .sevseg(sevseg));
+
+    initial begin
+        $monitor("BCD = %b | Segments = %b", bcd, sevseg);
+        bcd = 4'b0000; #10;
+        bcd = 4'b0001; #10;
+        bcd = 4'b0010; #10;
+        bcd = 4'b0011; #10;
+        bcd = 4'b0100; #10;
+        bcd = 4'b0101; #10;
+        bcd = 4'b0110; #10;
+        bcd = 4'b0111; #10;
+        bcd = 4'b1000; #10;
+        bcd = 4'b1001; #10;
+        $finish;
     end
+endmodule
+```
 
+### 📉 Simulation Result
+<div align="center">
+  <img src="https://github.com/ShravanaHS/verilog/blob/main/files/bcdseven.png" alt="7-Segment Display Simulation"> 7-Segment Display Simulation
+</div>
+
+---
+
+## 🔢 Project : Traffic Light Controller
+
+### 🔍 Theory
+This module converts a 4-bit BCD input into a 7-bit output to drive a seven-segment display (common cathode). Each segment corresponds to a bit in the output.
+
+### ⚙️ Functionality
+- Converts BCD (0–9) into appropriate pattern to light segments `a` to `g` in display.
+
+### 📊 Truth Table
+
+| BCD | Output `abcdefg` |
+|-----|------------------|
+| 0000 | 0111111 |
+| 0001 | 0000110 |
+| 0010 | 1011011 |
+| 0011 | 1001111 |
+| 0100 | 1100110 |
+| 0101 | 1101101 |
+| 0110 | 1111101 |
+| 0111 | 0000111 |
+| 1000 | 1111111 |
+| 1001 | 1101111 |
+
+### 💾 Source Code
+```verilog
+module sevseg(bcd, sevseg);
+    input [3:0] bcd;
+    output [6:0] sevseg;
+
+    function automatic [6:0] convert;
+        input [3:0] bcd;
+        begin
+            case (bcd)
+                4'b0000: convert = 7'b0111111;
+                4'b0001: convert = 7'b0000110;
+                4'b0010: convert = 7'b1011011;
+                4'b0011: convert = 7'b1001111;
+                4'b0100: convert = 7'b1100110;
+                4'b0101: convert = 7'b1101101;
+                4'b0110: convert = 7'b1111101;
+                4'b0111: convert = 7'b0000111;
+                4'b1000: convert = 7'b1111111;
+                4'b1001: convert = 7'b1101111;
+                default: convert = 7'b0000000;
+            endcase
+        end
+    endfunction
+
+    assign sevseg = convert(bcd);
 endmodule
 
+// or simpler code
 
+ module bcd_seven (bcd, seven);
+  input [3:0] bcd;
+  output[7:1] seven;
+  reg   [7:1] seven;
+  always @(bcd)
+  begin
+    case (bcd)
+      4'b0000 : seven = 7'b0111111 ;
+      4'b0001 : seven = 7'b0000110 ;
+      4'b0010 : seven = 7'b1011011 ;
+      4'b0011 : seven = 7'b1001111 ;
+      4'b0100 : seven = 7'b1100110 ;
+      4'b0101 : seven = 7'b1101101 ;
+      4'b0110 : seven = 7'b1111101 ;
+      4'b0111 : seven = 7'b0000111 ;
+      4'b1000 : seven = 7'b1111111 ;
+      4'b1001 : seven = 7'b1101111 ;
+      default : seven = 7'b0000000 ;
+    endcase
+  end
+ endmodule
 ```
 
-#### Simulation Result
+### 🧪 Testbench
+```verilog
+module sevseg_tb;
+    reg [3:0] bcd;
+    wire [6:0] sevseg;
 
-<div align="center"> <img src="https://github.com/ShravanaHS/verilog/blob/main/files/bcdseven.png" alt="decoder Simulation Waveform" >decoder Simulation Waveform </div>
+    sevseg uut (.bcd(bcd), .sevseg(sevseg));
 
-
-## Getting Started
-### Prerequisites
-Ensure you have the following tool installed:
-- **ModelSim** for simulation and waveform analysis
-
-### Cloning the Repository
-```sh
-git clone https://github.com/yourusername/verilog-project.git
-cd verilog-project
+    initial begin
+        $monitor("BCD = %b | Segments = %b", bcd, sevseg);
+        bcd = 4'b0000; #10;
+        bcd = 4'b0001; #10;
+        bcd = 4'b0010; #10;
+        bcd = 4'b0011; #10;
+        bcd = 4'b0100; #10;
+        bcd = 4'b0101; #10;
+        bcd = 4'b0110; #10;
+        bcd = 4'b0111; #10;
+        bcd = 4'b1000; #10;
+        bcd = 4'b1001; #10;
+        $finish;
+    end
+endmodule
 ```
+
+### 📉 Simulation Result
+<div align="center">
+  <img src="https://github.com/ShravanaHS/verilog/blob/main/files/bcdseven.png" alt="7-Segment Display Simulation"> 7-Segment Display Simulation
+</div>
+
+---
+
+
+## ✅ How to Run Simulations
+
+1. Install [ModelSim](https://www.intel.com/content/www/us/en/software-kit/683612/modelsim-starter-edition.html) or any Verilog simulator.
+2. Compile the `.v` files.
+3. Run the testbench file.
+4. Observe outputs in the console and waveform viewer.
+
+---
 
 
