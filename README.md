@@ -326,111 +326,180 @@ endmodule
 
 ---
 
-## 🔢 Project : Traffic Light Controller
+## 🚦 Project 5: Traffic Light Controller (Sequential FSM Design)
 
-### 🔍 Theory
-This module converts a 4-bit BCD input into a 7-bit output to drive a seven-segment display (common cathode). Each segment corresponds to a bit in the output.
+---
 
-### ⚙️ Functionality
-- Converts BCD (0–9) into appropriate pattern to light segments `a` to `g` in display.
+### 🔍 Problem Statement
 
-### 📊 Truth Table
+Design a sequential **Traffic Light Controller** for an intersection between two streets, "A" and "B". Each street has sensors that detect incoming traffic:
 
-| BCD | Output `abcdefg` |
-|-----|------------------|
-| 0000 | 0111111 |
-| 0001 | 0000110 |
-| 0010 | 1011011 |
-| 0011 | 1001111 |
-| 0100 | 1100110 |
-| 0101 | 1101101 |
-| 0110 | 1111101 |
-| 0111 | 0000111 |
-| 1000 | 1111111 |
-| 1001 | 1101111 |
+- `Sa = 1` → Vehicle on Street A.
+- `Sb = 1` → Vehicle on Street B.
 
-### 💾 Source Code
+#### Rules:
+- Street A is the **main street** and stays green by default.
+- If a vehicle is detected on Street B (`Sb = 1`) and none on A (`Sa = 0`), the green light switches to B.
+- B remains green for **50 seconds**, extendable by **10 seconds** if new cars continue to arrive on B.
+- A must remain green for **at least 60 seconds** before switching, only if `Sb = 1`.
+- The clock cycle = **10 seconds**.
+- Outputs:  
+  - Street A → `Ga (Green)`, `Ya (Yellow)`, `Ra (Red)`  
+  - Street B → `Gb (Green)`, `Yb (Yellow)`, `Rb (Red)`
+
+---
+
+#### 📚 Theory & Working
+
+This controller is based on a **Moore Finite State Machine (FSM)**, where outputs depend only on the current state. The transition logic is determined by `Sa` and `Sb`, and a 10-second clock controls state transitions.
+
+#### State Graph:
+- `S0` to `S4` → A green, B red (60s)
+- `S5` → Check if `Sb == 1`, then switch
+- `S6` → A yellow (10s)
+- `S7` to `S10` → A red, B green (40s)
+- `S11` → If `Sa == 1` or `Sb == 0` → move to Yb
+- `S12` → B yellow (10s) → return to A green
+
+---
+
+### 📊 State Table
+
+| State | Sa | Sb | Outputs      | Next State |
+|-------|----|----|--------------|------------|
+| S0–S4 |  X |  X | Ga=1, Rb=1   | S(n+1)     |
+| S5    |  X |  0 | Ga=1, Rb=1   | S5         |
+| S5    |  X |  1 | Ga=1, Rb=1   | S6         |
+| S6    |  X |  X | Ya=1, Rb=1   | S7         |
+| S7–S10|  X |  X | Ra=1, Gb=1   | S(n+1)     |
+| S11   |  1 |  X | Ra=1, Gb=1   | S12        |
+| S11   |  0 |  1 | Ra=1, Gb=1   | S11        |
+| S12   |  X |  X | Ra=1, Yb=1   | S0         |
+
+---
+
+### 💻 Verilog Code
+
 ```verilog
-module sevseg(bcd, sevseg);
-    input [3:0] bcd;
-    output [6:0] sevseg;
+module traffic(sa,sb,clk,ra,rb,ya,yb,ga,gb);
+    input sa, sb, clk;
+    output reg ra, rb, ya, yb, ga, gb;
 
-    function automatic [6:0] convert;
-        input [3:0] bcd;
-        begin
-            case (bcd)
-                4'b0000: convert = 7'b0111111;
-                4'b0001: convert = 7'b0000110;
-                4'b0010: convert = 7'b1011011;
-                4'b0011: convert = 7'b1001111;
-                4'b0100: convert = 7'b1100110;
-                4'b0101: convert = 7'b1101101;
-                4'b0110: convert = 7'b1111101;
-                4'b0111: convert = 7'b0000111;
-                4'b1000: convert = 7'b1111111;
-                4'b1001: convert = 7'b1101111;
-                default: convert = 7'b0000000;
-            endcase
+reg [3:0] stage;  
+
+// Initialize stage at reset
+initial begin
+    stage = 0;
+end
+
+always @(posedge clk) begin
+    // Reset all signals at the start of each clock cycle
+    ra = 0; rb = 0; ya = 0; yb = 0; ga = 0; gb = 0;
+
+    case(stage)
+        0,1,2,3,4: begin
+            ga = 1;   // Green for A
+            rb = 1;   // Red for B
+            stage = stage + 1;
         end
-    endfunction
 
-    assign sevseg = convert(bcd);
+        5: begin
+            ga = 1;
+            rb = 1;
+            if (sb == 1)
+                stage = stage + 1;
+            else
+                stage = 5;  // Stay in the same stage if condition not met
+        end
+
+        6: begin
+            ya = 1;   // Yellow for A
+            rb = 1;   // Red for B
+            stage = stage + 1;
+        end
+
+        7,8,9,10: begin
+            ra = 1;   // Red for A
+            gb = 1;   // Green for B
+            stage = stage + 1;
+        end
+
+        11: begin
+            ra = 1;
+            gb = 1;
+            if (sa == 1 || sb == 0)
+                stage = stage + 1;
+            else
+                stage = 11;  // Stay in the same stage if condition not met
+        end
+
+        12: begin
+            ra = 1;
+            yb = 1;   // Yellow for B
+            stage = 0; // Reset cycle
+        end
+
+    endcase
+end
+
 endmodule
 
-// or simpler code
 
- module bcd_seven (bcd, seven);
-  input [3:0] bcd;
-  output[7:1] seven;
-  reg   [7:1] seven;
-  always @(bcd)
-  begin
-    case (bcd)
-      4'b0000 : seven = 7'b0111111 ;
-      4'b0001 : seven = 7'b0000110 ;
-      4'b0010 : seven = 7'b1011011 ;
-      4'b0011 : seven = 7'b1001111 ;
-      4'b0100 : seven = 7'b1100110 ;
-      4'b0101 : seven = 7'b1101101 ;
-      4'b0110 : seven = 7'b1111101 ;
-      4'b0111 : seven = 7'b0000111 ;
-      4'b1000 : seven = 7'b1111111 ;
-      4'b1001 : seven = 7'b1101111 ;
-      default : seven = 7'b0000000 ;
-    endcase
-  end
- endmodule
 ```
 
 ### 🧪 Testbench
 ```verilog
-module sevseg_tb;
-    reg [3:0] bcd;
-    wire [6:0] sevseg;
 
-    sevseg uut (.bcd(bcd), .sevseg(sevseg));
+module traffic_tb();
 
-    initial begin
-        $monitor("BCD = %b | Segments = %b", bcd, sevseg);
-        bcd = 4'b0000; #10;
-        bcd = 4'b0001; #10;
-        bcd = 4'b0010; #10;
-        bcd = 4'b0011; #10;
-        bcd = 4'b0100; #10;
-        bcd = 4'b0101; #10;
-        bcd = 4'b0110; #10;
-        bcd = 4'b0111; #10;
-        bcd = 4'b1000; #10;
-        bcd = 4'b1001; #10;
-        $finish;
-    end
+reg sa, sb, clk;
+integer i;
+
+wire ra, rb, ya, yb, ga, gb;
+
+// Instantiate the traffic module
+traffic tlc(sa, sb, clk, ra, rb, ya, yb, ga, gb);
+
+initial begin
+    sa = 0;
+    sb = 0;
+    clk = 0;
+end
+
+// Generate clock signal
+initial begin 
+    clk = 1'b0;
+    forever #5 clk = ~clk;
+end
+
+// Stimulus generation
+initial
+	begin
+	#70 sa =0;sb=0;
+	#60 sa =1;sb=0;
+	
+	#60 sa =0;sb=1;
+	
+	#50 sa =1;sb=1;
+	end
+	
+	
+
+
+
+// Monitoring outputs
+initial begin
+    $monitor($time, " sa=%b, sb=%b, ra=%b, rb=%b, ya=%b, yb=%b, ga=%b, gb=%b", 
+             sa, sb, ra, rb, ya, yb, ga, gb);
+    #300 $finish;
+end 
+
 endmodule
 ```
 
 ### 📉 Simulation Result
 <div align="center">
-  <img src="https://github.com/ShravanaHS/verilog/blob/main/files/bcdseven.png" alt="7-Segment Display Simulation"> 7-Segment Display Simulation
-</div>
+  <img src="https://github.com/ShravanaHS/verilog/blob/main/files/trc.png" alt="7-Segment Display Simulation"> traffic light controller </div>
 
 ---
 
