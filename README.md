@@ -31,7 +31,7 @@ The inverter performs a **logical negation** operation. It simply flips the inpu
 
 **block diagram**
 ##  Logic Symbol
-
+<div align="center"> <img src="https://github.com/ShravanaHS/verilog/blob/main/files/invsym.png" alt="Inverter symbol" > inverter symbol </div>
 
 #### Source Code
 ```verilog
@@ -66,10 +66,13 @@ endmodule
 a=0, y=1
 a=1, y=0
 ```
+<div align="center"> <img src="https://github.com/ShravanaHS/verilog/blob/main/files/inv.png?raw=true" alt="Inverter Simulation Waveform" > Inverter Simulation Waveform </div>
 
 ---
 
 ### Project 2: 2-Digit BCD Adder
+#### Block Diagram 
+
 #### Source Code
 ```verilog
 // twodigbcdadd.v
@@ -149,13 +152,16 @@ endmodule
 ```
 
 #### Simulation Result
-```
-<Insert Simulation Output Here>
-```
+
+<div align="center"> <img src="https://github.com/ShravanaHS/verilog/blob/main/files/2digbcd.png?raw=true" alt="2-digit BCD Adder Simulation Waveform"> 2-digit BCD Adder Simulation Waveform </div>
+
 
 ---
 
 ### Project 3: 4-Bit Carry Lookahead Adder
+#### block diagram
+<div align="center"> <img src="https://github.com/ShravanaHS/verilog/blob/main/files/clasum.png" alt="sumbol"> 4 Bit carry lookahead adder symbol </div>
+
 #### Source Code
 ```verilog
 // claa.v
@@ -232,7 +238,7 @@ endmodule ```
 
 #### Simulation Result
 ```
-<Insert Simulation Output Here>
+<div align="center"> <img src="https://github.com/ShravanaHS/verilog/blob/main/files/cla.png" alt="Carry Look Ahead Adder Simulation Waveform" > Carry Look Ahead Adder Simulation Waveform </div>
 ```
 
 ---
@@ -331,9 +337,9 @@ endmodule
 ```
 
 #### Simulation Result
-```
-<Insert Simulation Output Here>
-```
+
+<div align="center"> <img src="https://github.com/ShravanaHS/verilog/blob/main/files/bcdseven.png" alt="decoder Simulation Waveform" >decoder Simulation Waveform </div>
+
 
 ## Getting Started
 ### Prerequisites
